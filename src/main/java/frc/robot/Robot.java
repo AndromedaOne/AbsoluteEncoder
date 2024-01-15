@@ -86,6 +86,16 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void disabledInit() {
+    m_motor.setIdleMode(CANSparkMax.IdleMode.kCoast);
+  }
+
+  @Override
+  public void teleopInit() {
+    m_motor.setIdleMode(CANSparkMax.IdleMode.kBrake);
+  }
+  
+  @Override
   public void teleopPeriodic() {
     // read PID coefficients from SmartDashboard
     double p = SmartDashboard.getNumber("P Gain", 0);
