@@ -10,9 +10,10 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxAlternateEncoder;
+import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 
@@ -20,22 +21,14 @@ public class Robot extends TimedRobot {
   /**
    * Change these parameters to match your setup
    */
-  private static final int kCanID = 1;
+  private static final int kCanID = 7;
   private static final MotorType kMotorType = MotorType.kBrushless;
-  private static final SparkMaxAlternateEncoder.Type kAltEncType = SparkMaxAlternateEncoder.Type.kQuadrature;
-  private static final int kCPR = 8192;
 
   private CANSparkMax m_motor;
   private SparkPIDController m_pidController;
   public double kP, kI, kD, kIz, kFF, kMaxOutput, kMinOutput;
 
-  /**
-   * An alternate encoder object is constructed using the GetAlternateEncoder() 
-   * method on an existing CANSparkMax object. If using a REV Through Bore 
-   * Encoder, the type should be set to quadrature and the counts per 
-   * revolution set to 8192
-   */
-  private RelativeEncoder m_alternateEncoder;
+  private AbsoluteEncoder m_absoluteEncoder;
 
   @Override
   public void robotInit() {
@@ -43,7 +36,7 @@ public class Robot extends TimedRobot {
     m_motor = new CANSparkMax(kCanID, kMotorType);
     m_motor.restoreFactoryDefaults();
 
-    m_alternateEncoder = m_motor.getAlternateEncoder(kAltEncType, kCPR);
+    m_absoluteEncoder = m_motor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
     
     /**
      * In order to use PID functionality for a controller, a SparkMaxPIDController object
@@ -57,7 +50,7 @@ public class Robot extends TimedRobot {
      * feedback device. Instead, we can set the feedback device to the alternate
      * encoder object
      */
-    m_pidController.setFeedbackDevice(m_alternateEncoder);
+    m_pidController.setFeedbackDevice(m_absoluteEncoder);
 
     /**
      * From here on out, code looks exactly like running PID control with the 
@@ -66,8 +59,8 @@ public class Robot extends TimedRobot {
 
     // PID coefficients
     kP = 0.1; 
-    kI = 1e-4;
-    kD = 1; 
+    kI = 0;
+    kD = 0; 
     kIz = 0; 
     kFF = 0; 
     kMaxOutput = 1; 
@@ -129,9 +122,13 @@ public class Robot extends TimedRobot {
      *  com.revrobotics.CANSparkMax.ControlType.kVelocity
      *  com.revrobotics.CANSparkMax.ControlType.kVoltage
      */
-    m_pidController.setReference(rotations, CANSparkMax.ControlType.kPosition);
+    m_pidController.setReference(rotations, ControlType.kPosition);
     
     SmartDashboard.putNumber("SetPoint", rotations);
-    SmartDashboard.putNumber("ProcessVariable", m_alternateEncoder.getPosition());
+  }
+
+  @Override
+  public void robotPeriodic() {
+    SmartDashboard.putNumber("ProcessVariable", m_absoluteEncoder.getPosition());
   }
 }
