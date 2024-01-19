@@ -37,6 +37,7 @@ public class Robot extends TimedRobot {
     m_motor.restoreFactoryDefaults();
 
     m_absoluteEncoder = m_motor.getAbsoluteEncoder(SparkAbsoluteEncoder.Type.kDutyCycle);
+    m_absoluteEncoder.setPositionConversionFactor(360);
     
     /**
      * In order to use PID functionality for a controller, a SparkMaxPIDController object
@@ -51,6 +52,9 @@ public class Robot extends TimedRobot {
      * encoder object
      */
     m_pidController.setFeedbackDevice(m_absoluteEncoder);
+    m_pidController.setPositionPIDWrappingEnabled(true);
+    m_pidController.setPositionPIDWrappingMaxInput(360);
+    m_pidController.setPositionPIDWrappingMinInput(0);
 
     /**
      * From here on out, code looks exactly like running PID control with the 
